@@ -1,0 +1,27 @@
+version: '3'
+services:
+  logsfinder:
+    build: ./LogsFinder
+    ports:
+      - "8765:8000"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://logsfinder_user:logsfinder_password@db:5432/logsfinder_db
+      - TEST_LOG_PATH=./out.log
+    volumes:
+      - ./data:/data
+    restart: always
+    depends_on:
+      - db
+
+  db:
+    image: postgres:17
+    container_name: db
+    restart: always
+    environment:
+      - POSTGRES_USER=logsfinder_user
+      - POSTGRES_PASSWORD=logsfinder_password
+      - POSTGRES_DB=logsfinder_db
+    volumes:
+      - ./data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
