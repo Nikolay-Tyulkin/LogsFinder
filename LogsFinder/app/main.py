@@ -6,6 +6,7 @@ import logging
 from app.core.config import Settings
 from app.db.base import engine, Base, get_db
 from app.services.log_loader import LogLoader
+from app.api.v1 import logs
 
 logging.basicConfig(level=logging.INFO)
 settings = Settings()
@@ -52,10 +53,15 @@ async def init_db():
             log_loader = LogLoader(settings.TEST_LOG_PATH, session)
             await log_loader.load_logs()
 
+app.include_router(logs.router, prefix="/api/v1/logs")
+
 @app.on_event("startup")
 async def on_startup():
+    '''
+    Процедура запуска приложения
+    '''
     await init_db()
 
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to the IoT VPN Manager API"}
+    return {"message": "Welcome LogsFinder!"}

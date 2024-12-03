@@ -22,7 +22,7 @@ class LogsRepository:
     insert_log - процедура вставки лога в таблицу log
     
     '''
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
     async def insert_message(self, message: dict):
@@ -40,7 +40,7 @@ class LogsRepository:
             logger.error(f"Error inserting message: {e}, data: {new_message}")
             raise
         
-    async def insert_log(self, log: dict):
+    async def insert_log(self, log: dict) -> None:
         '''
         Процедура вставки лога в таблицу log
         
@@ -53,4 +53,39 @@ class LogsRepository:
         except Exception as e:
             await self.session.rollback()
             logger.error(f"Error inserting message: {e}, data: {new_log}")
+            raise
+
+    async def get_logs_by_adress(self, adress: str, limit: int = 100) -> list:
+        '''
+        Функция получения логов по адресу
+        
+        Параметры:
+        adress [:str] - адрес
+        
+        Возвращает:
+        logs [:list] - список логов
+        '''
+        try:
+            query = (
+                select(
+                Log.created.label('timestamp'),
+                Log.str.label('log_entry'),
+                Message.int_id,
+                )
+                .join(Message, Log.int_id == Message.int_id, isouter=True)
+                .where(Message.str == adress)
+                .order_by(Log.created.desc())
+                .limit(10)
+                )
+
+            result = await self.session.execute(query)
+            logs = result.scalars().all()
+            return logs
+
+
+        except NoResultFound:
+            logger.error(f"Logs not found by adress: {adress}")
+            return None
+        except Exception as e:
+            logger.error(f"Error getting logs by adress: {e}")
             raise
