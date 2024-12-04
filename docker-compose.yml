@@ -7,8 +7,6 @@ services:
     environment:
       - DATABASE_URL=postgresql+asyncpg://logsfinder_user:logsfinder_password@db:5432/logsfinder_db
       - TEST_LOG_PATH=./out.log
-    volumes:
-      - ./data:/data
     restart: always
     depends_on:
       - db
