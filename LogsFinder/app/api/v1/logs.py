@@ -14,11 +14,11 @@ logger = logging.getLogger(__name__)
 @router.get("/logs/{adress}", response_model=List[LogResponse])
 async def get_logs_by_adress(adress: str, limit: int = 100, db: AsyncSession = Depends(get_db)):
     '''
-    Функция получения логов по адресу
-
-    Параметры:
-    adress [:str] - адрес
-    limit: [:int] - количество логов
+    Функция получения логов по адресу получателя\n
+    \n
+    Параметры: \n
+    **adress [:str]** - адрес \n
+    **limit: [:int]** - количество логов
     '''
     log_service = LogService(db)
     logging.info(f"Getting logs for adress: {adress}")
