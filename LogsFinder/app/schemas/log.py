@@ -7,12 +7,12 @@ class LogResponse(BaseModel):
     '''
     Схема для лога
     '''
-    id: int = Field(..., 
-                    description="ID лога",
-                    example=1)
-    logs_entry: str = Field(...,
+    int_id: str = Field(..., 
+                    description="Внутренний ID лога",
+                    example="Rwtd6-0000Ac-KA")
+    log_entry: str = Field(...,
                             description="Текст лога",
-                            example="Log entry")
+                            example="1Rwtd6-0000Ac-Lo == grereyjbpddf@gmail.com R=dnslookup T=remote_smtp defer (-1): domain matches queue_smtp_domains, or -odqs set")
     timestamp: datetime = Field(...,
                                 description="Временная метка",
                                 example="2021-10-01T00:00:00")

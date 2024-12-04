@@ -1,16 +1,84 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Поиск логов</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 10px;
+        }
+    </style>
+    <script>
+        async function searchLogs() {
+            const address = document.getElementById("address").value.trim();
+            const resultsDiv = document.getElementById("results");
+            const tableContainer = document.getElementById("table-container");
+
+            resultsDiv.innerHTML = "";
+            tableContainer.innerHTML = "";
+
+            if (!address) {
+                resultsDiv.innerHTML = "<p style='color: red;'>Введите адрес!</p>";
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/v1/logs/${address}`);
+                if (!response.ok) {
+                    throw new Error(`Ошибка: ${response.statusText}`);
+                }
+
+                let logs = await response.json();
+
+                if (logs.length === 0) {
+                    resultsDiv.innerHTML = "<p>Логи не найдены.</p>";
+                    return;
+                }
+
+                if (logs.length >= 100) {
+                    resultsDiv.innerHTML = `<p>Найдено 100 или более чем 100 строк. Показаны первые 100 строк.</p>`;
+                    logs = logs.slice(0, 100);
+                } else {
+                    resultsDiv.innerHTML = `<p>Найдено строк: ${logs.length}</p>`;
+                }
+
+                const tableHTML = `
+                    <table>
+                        <tr>
+                            <th>Дата и время</th>
+                            <th>Сообщение</th>
+                        </tr>
+                        ${logs.map(log => `
+                            <tr>
+                                <td>${log.timestamp}</td>
+                                <td>${log.log_entry}</td>
+                            </tr>
+                        `).join('')}
+                    </table>
+                `;
+
+                tableContainer.innerHTML = tableHTML;
+
+            } catch (error) {
+                resultsDiv.innerHTML = `<p style='color: red;'>Произошла ошибка: ${error.message}</p>`;
+            }
+        }
+    </script>
 </head>
 <body>
     <h1>Поиск логов по адресу получателя</h1>
-    <form method="GET" action="/search">
+    <form onsubmit="event.preventDefault(); searchLogs();">
         <label for="address">Адрес получателя:</label>
-        <input type="text" id="address" name="address" required>
+        <input type="text" id="address">
         <button type="submit">Поиск</button>
     </form>
+    <div id="results"></div>
+    <div id="table-container"></div>
 </body>
 </html>

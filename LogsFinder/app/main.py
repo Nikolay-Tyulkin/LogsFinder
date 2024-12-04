@@ -1,6 +1,8 @@
 import asyncio
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.templating import Jinja2Templates
+from fastapi.responses import HTMLResponse
 import logging
 
 from app.core.config import Settings
@@ -12,6 +14,7 @@ logging.basicConfig(level=logging.INFO)
 settings = Settings()
 
 app = FastAPI(title=settings.API_TITLE, version=settings.API_VERSION, description=settings.API_DESCRIPTION)
+templates = Jinja2Templates(directory="app/pages")
 
 # Настройка CORS Middleware
 app.add_middleware(
@@ -23,7 +26,13 @@ app.add_middleware(
 )
 
 async def check_db_connection(max_attempts: int = 10, delay: int = 5):
-    """Ожидает подключения к базе данных перед инициализацией."""
+    '''
+    Проверка подключения к базе данных
+    
+    Параметры:
+    max_attempts [:int] - максимальное количество попыток подключения
+    delay [:int] - задержка между попытками
+    '''
     attempt = 0
     while attempt < max_attempts:
         try:
@@ -46,14 +55,14 @@ async def init_db():
     await check_db_connection() 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-        logging.info("Database tables created")
+        logging.info("База данных создана")
     
     async for session in get_db():
         async with session.begin():
             log_loader = LogLoader(settings.TEST_LOG_PATH, session)
             await log_loader.load_logs()
 
-app.include_router(logs.router, prefix="/api/v1/logs")
+app.include_router(logs.router, prefix="/api/v1")
 
 @app.on_event("startup")
 async def on_startup():
@@ -61,7 +70,12 @@ async def on_startup():
     Процедура запуска приложения
     '''
     await init_db()
+    
+@app.get("/", response_class=HTMLResponse)
+async def search_form(request: Request):
+    """
+    Возвращает HTML-форму для поиска логов.
+    """
+    return templates.TemplateResponse("index.html", {"request": request})
 
-@app.get("/")
-def read_root():
-    return {"message": "Welcome LogsFinder!"}
+

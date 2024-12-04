@@ -22,9 +22,15 @@ class LogService:
         
         Параметры:
         adress [:str] - адрес
+        limit [:int] - лимит логов
 
         Возвращает:
         logs [:list] - список логов
         '''
-        return await self.logs_repository.get_logs_by_adress(adress, limit)
+        logs = await self.logs_repository.get_logs_by_adress(adress)
+        messages = await self.logs_repository.get_messages_by_adress(adress)
+        
+        combined_logs = logs + messages
+        combined_logs.sort(key=lambda x: (x['timestamp'], x['int_id']), reverse=True)
+        return combined_logs[:limit]
     

@@ -13,7 +13,7 @@ class Message(Base):
         id (str): Внешний идентификатор сообщения (например, id=xxxx).
         int_id (str): Внутренний ID сообщения.
         str (str): Текст сообщения.
-        status (bool): Статус сообщения (например, обработано или нет).
+        status (bool): Статус сообщения (? не понятен смысл, но добавил согласно тз)
     """
     __tablename__ = "message"
 
@@ -42,7 +42,7 @@ class Log(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True, index=True)
     created = Column(DateTime, default=datetime.now, index=True)
-    int_id = Column(String, index=True)
+    int_id = Column(String(16), index=True)
     str = Column(String)
     address = Column(String)
     
